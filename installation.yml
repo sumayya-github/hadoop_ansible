@@ -1,0 +1,19 @@
+- hosts: all
+  tasks:
+  - name: "Copying JDK software"
+    copy:
+       dest: "/root"
+       src: "/root/jdk-8u171-linux-x64.rpm"
+ 
+  - name:  "Copying Hadoop software"
+    copy:
+       dest: "/root"
+       src: "/root/hadoop-1.2.1-1.x86_64.rpm"
+   
+  - name: "Installing JDK software"
+    command: "rpm -i jdk-8u171-linux-x64.rpm"
+    ignore_errors: yes
+
+  - name: "Installing Hadoop Software"
+    command: "rpm -i hadoop-1.2.1-1.x86_64.rpm --force"
+    ignore_errors: yes
