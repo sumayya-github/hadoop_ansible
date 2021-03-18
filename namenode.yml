@@ -1,0 +1,56 @@
+- hosts: namenode
+ 
+  vars_prompt:
+          - name: "name_dir"
+            private: "no"
+            prompt: "Enter name of Name Node dir"
+          - name: "name_ip"
+            prompt: "Enter Name node IP"
+            private: "no"
+
+  tasks:
+  - name: "Creating Name Node Directory"
+    file:
+        path: "{{ name_dir }}"
+        state: directory
+
+  - name: "Configuring hdfs-site.xml"
+    blockinfile:
+        path: /etc/hadoop/hdfs-site.xml
+        insertafter: "<configuration>"
+        block:
+             <property>
+             <name>dfs.name.dir</name>
+             <value>{{ name_dir }}</value>
+             </property>
+
+  - name: "Configuring core-site.xml"
+    blockinfile:
+        path: /etc/hadoop/core-site.xml
+        insertafter: "<configuration>"
+        block:
+             <property>
+             <name>fs.default.name</name>
+             <value>hdfs://{{ name_ip }}:9001</value>
+             </property>
+
+  - name: "Formatting namenode"
+    shell: "echo Y | hadoop namenode -format"
+    register: format
+  - debug:
+        var: format
+
+  - name: "Stopping firewalld"
+    command: systemctl stop firewalld
+
+  - name: "Starting namenode Services"
+    command: hadoop-daemon.sh start namenode
+
+  - name: "Checking status of namenode"
+    shell: "jps"
+    register: jps
+  - debug:
+        var: jps
+
+  - name: "Checking Hadoop Cluster Report"
+    command: hadoop dfsadmin -report
